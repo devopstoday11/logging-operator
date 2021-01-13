@@ -9,7 +9,6 @@ require (
 	github.com/banzaicloud/logging-operator/pkg/sdk v0.0.0
 	github.com/banzaicloud/operator-tools v0.16.2
 	github.com/go-logr/logr v0.2.1
-	github.com/imdario/mergo v0.3.9
 	github.com/onsi/gomega v1.10.1
 	github.com/pborman/uuid v1.2.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.43.0
@@ -26,4 +25,4 @@ replace k8s.io/client-go => k8s.io/client-go v0.19.2
 
 replace github.com/banzaicloud/logging-operator/pkg/sdk => ./pkg/sdk
 
-replace github.com/banzaicloud/operator-tools => /Users/ahma/Projects/bc/operator-tools
+replace github.com/banzaicloud/operator-tools => ../operator-tools

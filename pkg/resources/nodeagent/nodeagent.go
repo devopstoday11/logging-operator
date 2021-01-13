@@ -20,11 +20,11 @@ import (
 	"emperror.dev/errors"
 	"github.com/banzaicloud/logging-operator/pkg/resources"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/api/v1beta1"
+	"github.com/banzaicloud/operator-tools/pkg/merge"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 	util "github.com/banzaicloud/operator-tools/pkg/utils"
 	"github.com/go-logr/logr"
-	"github.com/imdario/mergo"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -186,33 +186,36 @@ type nodeAgentInstance struct {
 func (r *Reconciler) Reconcile() (*reconcile.Result, error) {
 	for _, a := range r.Logging.Spec.NodeAgents {
 		var instance nodeAgentInstance
-		err := mergo.Merge(a, NodeAgentFluentbitDefaults())
+
+		merged := &v1beta1.NodeAgent{}
+		err := merge.Merge(NodeAgentFluentbitDefaults(), a, merged)
 		if err != nil {
 			return nil, err
 		}
 
 		switch a.Type {
 		case "windows":
-			err := mergo.Merge(a, NodeAgentFluentbitWindowsDefaults)
+			mergedWindows := &v1beta1.NodeAgent{}
+			err := merge.Merge(merged, NodeAgentFluentbitWindowsDefaults, mergedWindows)
 			if err != nil {
 				return nil, err
 			}
 			instance = nodeAgentInstance{
-				nodeAgent:  a,
+				nodeAgent:  mergedWindows,
 				reconciler: r.GenericResourceReconciler,
 				logging:    r.Logging,
 			}
 		default:
-			err := mergo.Merge(a, NodeAgentFluentbitLinuxDefaults)
+			mergedLinux := &v1beta1.NodeAgent{}
+			err := merge.Merge(merged, NodeAgentFluentbitLinuxDefaults, mergedLinux)
 			if err != nil {
 				return nil, err
 			}
 			instance = nodeAgentInstance{
-				nodeAgent:  a,
+				nodeAgent:  mergedLinux,
 				reconciler: r.GenericResourceReconciler,
 				logging:    r.Logging,
 			}
-
 		}
 
 		result, err := instance.Reconcile()
